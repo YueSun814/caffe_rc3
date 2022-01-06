@@ -1,0 +1,136 @@
+# Simple single-layer network to showcase editing model parameters.
+layer {
+  name: "data"
+  type: "HDF5Data"
+  top: "data"
+  top: "label2"
+  top: "label"
+  include {
+    phase: TEST
+  }
+  hdf5_data_param {
+    source: "./sample_data_list.txt"
+    batch_size: 1
+  }
+}
+layer {
+  name: "data"
+  type: "HDF5Data"
+  top: "data"
+  top: "label2"
+  top: "label"
+  include {
+    phase: TRAIN
+  }
+  hdf5_data_param {
+    source: "./sample_data_list.txt"
+    batch_size: 1
+  }
+}
+layer {
+  name: "conv"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv"
+  convolution_param {
+    num_output: 10 
+    kernel_size: 3
+    pad: 1
+    stride: 1
+    engine: CAFFE
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+  name: "pool1"
+  type: "Pooling"
+  bottom: "conv"
+  top: "pool1"
+  pooling_param {
+    pool: AVE
+    kernel_size: 3
+    stride: 2
+  }
+}
+
+
+#layer {
+#  name: "upscore"
+#  type: "Deconvolution"
+#  bottom: "pool1"
+#  top: "upscore"
+#  param {
+#    lr_mult: 0
+#  }
+#  convolution_param {
+#    num_output: 1 
+#    bias_term: false
+#    engine: CAFFE
+#    kernel_size: 4 
+#    pad: 1
+#    stride: 2 
+#    weight_filler {
+#      type: "gaussian"
+#      std: 0.01
+#    }
+#  }
+#}
+
+layer {
+  name: "deconv5"
+  type: "Deconvolution"
+  bottom: "pool1"
+  top: "deconv5"
+  param {
+    lr_mult: 0
+  }
+  convolution_param {
+    num_output: 1
+    bias_term: false
+    engine: CAFFE
+    kernel_size: 4
+    pad: 1
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+  }
+}
+
+
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "deconv5"
+  bottom: "label2"
+  top: "loss"
+#  loss_param {
+#    ignore_label: -1
+#  }
+#  softmax_param {
+#    axis: 1
+#  }
+  include: { phase: TRAIN }
+}
+#layer {
+#  name: "frscore"
+#  type: "Crop"
+#  bottom: "upscore"
+#  bottom: "data"
+#  top: "score"
+#  crop_param {
+#    axis: 2
+#    offset: 19
+#  }
+#}
+
+
